@@ -5,7 +5,7 @@ import { products, type Product } from "@/lib/products"
 import { ProductCard } from "@/components/product-card"
 
 interface FeaturedSectionProps {
-  onAddToCart: (product: Product) => void
+  onAddToCart: (product: Product, quantity?: number) => void
 }
 
 export function FeaturedSection({ onAddToCart }: FeaturedSectionProps) {
@@ -38,7 +38,7 @@ export function FeaturedSection({ onAddToCart }: FeaturedSectionProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {featured.map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+            <ProductCard key={product.id} product={product} onAddToCart={(p, qty) => onAddToCart(p, qty)} />
           ))}
         </div>
       </div>

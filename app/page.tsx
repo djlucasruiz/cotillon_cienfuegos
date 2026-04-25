@@ -18,8 +18,8 @@ export default function HomePage() {
   const [cartOpen, setCartOpen] = useState(false)
   const { items, totalItems, totalPrice, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
 
-  function handleAddToCart(product: Product) {
-    addToCart(product)
+  function handleAddToCart(product: Product, quantity = 1) {
+    addToCart(product, quantity)
     setCartOpen(true)
   }
 

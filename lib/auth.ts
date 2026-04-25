@@ -1,31 +1,41 @@
 // Credenciales del administrador
-// Para cambiar la contraseña, modificá ADMIN_PASSWORD
 const ADMIN_USER = "CIENFUEGOSO325"
 const ADMIN_PASSWORD = "CIENFUEGOSO325"
 const AUTH_KEY = "cc_admin_session"
 
+function isBrowser(): boolean {
+  return typeof window !== "undefined"
+}
+
 export function login(username: string, password: string): boolean {
-  if (username === ADMIN_USER && password === ADMIN_PASSWORD) {
+  if (!isBrowser()) return false
+  if (username.trim() === ADMIN_USER && password.trim() === ADMIN_PASSWORD) {
     const session = {
       user: username,
       expires: Date.now() + 1000 * 60 * 60 * 8, // 8 horas
     }
-    localStorage.setItem(AUTH_KEY, JSON.stringify(session))
-    return true
+    try {
+      localStorage.setItem(AUTH_KEY, JSON.stringify(session))
+      return true
+    } catch {
+      return false
+    }
   }
   return false
 }
 
 export function logout(): void {
-  localStorage.removeItem(AUTH_KEY)
+  if (!isBrowser()) return
+  try { localStorage.removeItem(AUTH_KEY) } catch { /* noop */ }
 }
 
 export function isAuthenticated(): boolean {
+  if (!isBrowser()) return false
   try {
     const raw = localStorage.getItem(AUTH_KEY)
     if (!raw) return false
     const session = JSON.parse(raw)
-    if (Date.now() > session.expires) {
+    if (!session?.expires || Date.now() > session.expires) {
       localStorage.removeItem(AUTH_KEY)
       return false
     }

@@ -9,6 +9,8 @@ export interface Product {
   badge?: string
   badgeColor?: string
   featured?: boolean
+  colors?: string[]      // ej: ["Rojo", "Azul", "Verde"]
+  features?: string[]    // ej: ["Incluye helio", "Para exteriores"]
 }
 
 export interface Category {

@@ -12,10 +12,14 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(true)
 
   useEffect(() => {
+    // Solo verificar sesión en el cliente
     if (isAuthenticated()) {
       router.replace("/admin")
+    } else {
+      setChecking(false)
     }
   }, [router])
 
@@ -23,15 +27,21 @@ export default function AdminLoginPage() {
     e.preventDefault()
     setError("")
     setLoading(true)
-    setTimeout(() => {
-      const ok = login(username.trim(), password)
-      if (ok) {
-        router.replace("/admin")
-      } else {
-        setError("Usuario o contraseña incorrectos")
-        setLoading(false)
-      }
-    }, 600)
+    const ok = login(username.trim(), password.trim())
+    if (ok) {
+      router.replace("/admin")
+    } else {
+      setError("Usuario o contraseña incorrectos")
+      setLoading(false)
+    }
+  }
+
+  if (checking) {
+    return (
+      <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "oklch(0.98 0 0)" }}>
+        <div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: "oklch(0.38 0.12 248)", borderTopColor: "transparent" }} />
+      </main>
+    )
   }
 
   return (

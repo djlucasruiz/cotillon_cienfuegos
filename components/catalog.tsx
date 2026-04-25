@@ -7,7 +7,7 @@ import { getProducts } from "@/lib/products-store"
 import { ProductCard } from "@/components/product-card"
 
 interface CatalogProps {
-  onAddToCart: (product: Product) => void
+  onAddToCart: (product: Product, quantity?: number) => void
 }
 
 export function Catalog({ onAddToCart }: CatalogProps) {
@@ -61,6 +61,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
               backgroundColor: "oklch(1 0 0)",
               borderColor: "oklch(0.88 0.03 90)",
               color: "oklch(0.2 0.02 270)",
+              ringColor: "oklch(0.6 0.22 5 / 0.4)",
             }}
             aria-label="Buscar productos"
           />
@@ -93,7 +94,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+              <ProductCard key={product.id} product={product} onAddToCart={(p, qty) => onAddToCart(p, qty)} />
             ))}
           </div>
         ) : (

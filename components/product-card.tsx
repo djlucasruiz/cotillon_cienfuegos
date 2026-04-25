@@ -1,14 +1,35 @@
 "use client"
 
-import { ShoppingCart, Plus } from "lucide-react"
+import { useState } from "react"
+import { ShoppingCart, Plus, Minus, CheckCircle2 } from "lucide-react"
 import { type Product, formatPrice } from "@/lib/products"
 
 interface ProductCardProps {
   product: Product
-  onAddToCart: (product: Product) => void
+  onAddToCart: (product: Product, quantity: number) => void
 }
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  const [qty, setQty] = useState(1)
+  const [added, setAdded] = useState(false)
+
+  function handleAdd() {
+    onAddToCart(product, qty)
+    setAdded(true)
+    setTimeout(() => {
+      setAdded(false)
+      setQty(1)
+    }, 1500)
+  }
+
+  function decrement() {
+    setQty((q) => Math.max(1, q - 1))
+  }
+
+  function increment() {
+    setQty((q) => Math.min(99, q + 1))
+  }
+
   return (
     <article className="group flex flex-col rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card">
       {/* Image */}
@@ -27,21 +48,21 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             {product.badge}
           </span>
         )}
-        {/* Quick add button on hover */}
-        <button
-          onClick={() => onAddToCart(product)}
-          className="absolute bottom-3 right-3 rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300"
-          style={{ backgroundColor: "oklch(0.6 0.22 5)", color: "oklch(1 0 0)" }}
-          aria-label={`Agregar ${product.name} al carrito`}
-        >
-          <Plus size={18} />
-        </button>
+        {/* Cantidad badge visible siempre */}
+        {qty > 1 && (
+          <span
+            className="absolute top-3 right-3 rounded-full w-7 h-7 flex items-center justify-center text-xs font-extrabold shadow-md"
+            style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}
+          >
+            {qty}
+          </span>
+        )}
       </div>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-4">
         <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "oklch(0.6 0.22 5)" }}>
-          {product.category.replace("-", " ")}
+          {product.category.replace(/-/g, " ")}
         </p>
         <h3 className="text-sm font-bold leading-snug mb-1 text-balance" style={{ color: "oklch(0.2 0.02 270)" }}>
           {product.name}
@@ -50,18 +71,65 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           {product.description}
         </p>
 
-        <div className="flex items-center justify-between mt-auto">
+        {/* Precio unitario + total si qty > 1 */}
+        <div className="flex flex-col mb-3">
           <span className="text-lg font-extrabold" style={{ color: "oklch(0.2 0.02 270)" }}>
             {formatPrice(product.price)}
           </span>
-          <button
-            onClick={() => onAddToCart(product)}
-            className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:scale-105 hover:shadow-md"
-            style={{ backgroundColor: "oklch(0.6 0.22 5)", color: "oklch(1 0 0)" }}
-            aria-label={`Agregar ${product.name} al carrito`}
+          {qty > 1 && (
+            <span className="text-xs font-semibold" style={{ color: "oklch(0.38 0.12 248)" }}>
+              Total: {formatPrice(product.price * qty)}
+            </span>
+          )}
+        </div>
+
+        {/* Selector de cantidad + botón */}
+        <div className="flex items-center gap-2 mt-auto">
+          {/* Selector */}
+          <div
+            className="flex items-center rounded-xl border overflow-hidden"
+            style={{ borderColor: "oklch(0.88 0.03 90)" }}
           >
-            <ShoppingCart size={14} />
-            Agregar
+            <button
+              onClick={decrement}
+              disabled={qty <= 1}
+              className="w-8 h-8 flex items-center justify-center transition-colors hover:opacity-70 disabled:opacity-30"
+              style={{ color: "oklch(0.3 0.02 270)" }}
+              aria-label="Reducir cantidad"
+            >
+              <Minus size={13} />
+            </button>
+            <span
+              className="w-8 text-center text-sm font-bold select-none"
+              style={{ color: "oklch(0.2 0.02 270)" }}
+            >
+              {qty}
+            </span>
+            <button
+              onClick={increment}
+              disabled={qty >= 99}
+              className="w-8 h-8 flex items-center justify-center transition-colors hover:opacity-70 disabled:opacity-30"
+              style={{ color: "oklch(0.3 0.02 270)" }}
+              aria-label="Aumentar cantidad"
+            >
+              <Plus size={13} />
+            </button>
+          </div>
+
+          {/* Botón agregar */}
+          <button
+            onClick={handleAdd}
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:scale-105 hover:shadow-md"
+            style={{
+              backgroundColor: added ? "oklch(0.55 0.18 145)" : "oklch(0.38 0.12 248)",
+              color: "oklch(1 0 0)",
+            }}
+            aria-label={`Agregar ${qty} ${product.name} al carrito`}
+          >
+            {added
+              ? <><CheckCircle2 size={14} /> Agregado</>
+              : <><ShoppingCart size={14} /> Agregar</>
+            }
           </button>
         </div>
       </div>

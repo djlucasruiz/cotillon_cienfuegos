@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import { type CartItem } from "@/hooks/use-cart"
 import { formatPrice } from "@/lib/products"
+import { ShippingCalculator } from "@/components/shipping-calculator"
 
 interface CartDrawerProps {
   open: boolean
@@ -83,8 +84,13 @@ export function CartDrawer({
   const [form, setForm] = useState<OrderForm>(defaultForm)
   const [orderId, setOrderId] = useState(generateOrderId)
   const [errors, setErrors] = useState<Partial<Record<keyof OrderForm, string>>>({})
+  const [shippingCost, setShippingCost] = useState(0)
+  const [shippingProvincia, setShippingProvincia] = useState("")
 
   const totalItems = items.reduce((s, i) => s + i.quantity, 0)
+  // Peso estimado: 0.3kg base + 0.2kg por item
+  const estimatedWeight = Math.max(0.5, totalItems * 0.2 + 0.3)
+  const totalWithShipping = totalPrice + shippingCost
 
   function handleClose() {
     onClose()
@@ -93,6 +99,8 @@ export function CartDrawer({
       setForm(defaultForm)
       setErrors({})
       setOrderId(generateOrderId())
+      setShippingCost(0)
+      setShippingProvincia("")
     }, 300)
   }
 
@@ -135,7 +143,9 @@ export function CartDrawer({
       `*Productos*`,
       productLines,
       ``,
-      `*Total: ${formatPrice(totalPrice)}*`,
+      `*Subtotal: ${formatPrice(totalPrice)}*`,
+      shippingCost > 0 ? `*Envio estimado: ${formatPrice(shippingCost)}*` : null,
+      `*Total: ${formatPrice(totalWithShipping)}*`,
       ``,
       `*Entrega*`,
       `  ${shipping}`,
@@ -458,6 +468,20 @@ export function CartDrawer({
                     </span>
                   </div>
                 )}
+
+                {/* Calculador de envío — solo si elige envío */}
+                {form.shippingType === "envio" && (
+                  <ShippingCalculator
+                    totalWeight={estimatedWeight}
+                    selectedCost={shippingCost}
+                    onShippingSelect={(cost, cp, provincia) => {
+                      setShippingCost(cost)
+                      setShippingProvincia(provincia)
+                      if (cp) setField("codigoPostal", cp)
+                      if (provincia) setField("provincia", provincia)
+                    }}
+                  />
+                )}
               </section>
 
               {/* Metodo de pago */}
@@ -537,9 +561,15 @@ export function CartDrawer({
                     </span>
                   </div>
                 ))}
+                {shippingCost > 0 && (
+                  <div className="flex justify-between text-xs pt-1">
+                    <span style={{ color: "oklch(0.55 0 0)" }}>Envío ({shippingProvincia})</span>
+                    <span style={{ color: "oklch(0.38 0.12 248)" }}>{formatPrice(shippingCost)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm font-bold pt-2 border-t mt-1" style={{ borderColor: "oklch(0.88 0.03 90)" }}>
                   <span style={{ color: "oklch(0.2 0.02 270)" }}>Total</span>
-                  <span style={{ color: "oklch(0.6 0.22 5)" }}>{formatPrice(totalPrice)}</span>
+                  <span style={{ color: "oklch(0.6 0.22 5)" }}>{formatPrice(totalWithShipping)}</span>
                 </div>
               </SummaryBlock>
 
