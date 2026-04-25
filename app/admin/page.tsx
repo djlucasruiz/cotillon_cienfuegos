@@ -739,7 +739,7 @@ function ProductForm({ form, setForm, categories, isNew, onSave, onCancel }: Pro
               <button key={bc.value} onClick={() => f("badgeColor", bc.value)} type="button"
                 className="w-7 h-7 rounded-full border-2 transition-all"
                 style={{
-                  backgroundColor: bc.color,
+                  backgroundColor: bc.value,
                   borderColor: form.badgeColor === bc.value ? "oklch(0.2 0.02 270)" : "transparent",
                 }}
                 title={bc.label} />
