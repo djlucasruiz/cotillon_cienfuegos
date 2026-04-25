@@ -266,9 +266,10 @@ export default function WholesalePage() {
       </div>
 
       <CartDrawer
-        isOpen={cartOpen}
+        open={cartOpen}
         onClose={() => setCartOpen(false)}
         items={items}
+        totalPrice={totalPrice}
         onRemove={removeFromCart}
         onUpdateQuantity={updateQuantity}
         onClear={clearCart}
