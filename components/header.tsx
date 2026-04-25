@@ -82,12 +82,13 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
           {/* Logo */}
           <Link href="#inicio" className="flex items-center shrink-0">
             <Image
-              src="/logo.jpg"
-              alt="Cotillón Cienfuegos Concordia"
-              width={120}
-              height={60}
-              className="object-contain"
-              priority
+             src="/logo.jpg"
+             alt="Cotillón Cienfuegos Concordia"
+             width={120}
+             height={60}
+             className="object-contain"
+             priority
+             unoptimized
             />
           </Link>
 
