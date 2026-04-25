@@ -61,7 +61,6 @@ export function Catalog({ onAddToCart }: CatalogProps) {
               backgroundColor: "oklch(1 0 0)",
               borderColor: "oklch(0.88 0.03 90)",
               color: "oklch(0.2 0.02 270)",
-              ringColor: "oklch(0.6 0.22 5 / 0.4)",
             }}
             aria-label="Buscar productos"
           />
