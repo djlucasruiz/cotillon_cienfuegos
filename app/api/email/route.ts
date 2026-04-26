@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "Cotillón Cienfuegos <onboarding@resend.dev>",
+      from: "Cotillón Cienfuegos <pedidos@cienfuegoscotillonconcordia.com>",
       to: [to],
       subject: `✅ Pedido #${orderNumber} recibido - Cotillón Cienfuegos`,
       html,
