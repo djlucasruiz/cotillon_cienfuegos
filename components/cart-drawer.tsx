@@ -907,7 +907,7 @@ export function CartDrawer({
                     <ArrowLeft size={15} />
                     Editar
                   </button>
-                  
+                  <a
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
