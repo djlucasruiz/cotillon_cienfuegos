@@ -760,6 +760,7 @@ export function CartDrawer({
               <button
                 onClick={() => {
                   const session = getRetailSession()
+                  if (!session) {
                     onClose()
                     document.dispatchEvent(new CustomEvent("open-auth-modal"))
                     return
