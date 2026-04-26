@@ -870,26 +870,55 @@ export function CartDrawer({
             )}
 
             {step === "confirm" && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setStep("form")}
-                  className="flex items-center justify-center gap-1 rounded-full py-3 px-4 text-sm font-bold transition-all border hover:bg-muted"
-                  style={{ borderColor: "oklch(0.88 0.03 90)", color: "oklch(0.4 0 0)" }}
-                >
-                  <ArrowLeft size={15} />
-                  Editar
-                </button>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => { saveOrder(); onClear(); setStep("sent") }}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-full py-3 text-sm font-bold transition-all hover:scale-105 hover:shadow-lg"
-                  style={{ backgroundColor: "oklch(0.62 0.18 145)", color: "oklch(1 0 0)" }}
-                >
-                  <MessageCircle size={18} />
-                  Enviar pedido
-                </a>
+              <div className="flex flex-col gap-2">
+                {(form.paymentType === "tarjeta" || form.paymentType === "billetera") && (
+                  <button
+                    onClick={async () => {
+                      const res = await fetch("/api/payment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          items,
+                          orderNumber: orderId,
+                          email: form.email,
+                          shippingCost,
+                          discount: discountPercent,
+                        })
+                      })
+                      const data = await res.json()
+                      if (data.init_point) {
+                        saveOrder()
+                        onClear()
+                        window.location.href = data.init_point
+                      }
+                    }}
+                    className="w-full flex items-center justify-center gap-2 rounded-full py-3 text-sm font-bold transition-all hover:scale-105 hover:shadow-lg"
+                    style={{ backgroundColor: "#009ee3", color: "#fff" }}
+                  >
+                    Pagar con Mercado Pago 💳
+                  </button>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setStep("form")}
+                    className="flex items-center justify-center gap-1 rounded-full py-3 px-4 text-sm font-bold transition-all border hover:bg-muted"
+                    style={{ borderColor: "oklch(0.88 0.03 90)", color: "oklch(0.4 0 0)" }}
+                  >
+                    <ArrowLeft size={15} />
+                    Editar
+                  </button>
+                  
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => { saveOrder(); onClear(); setStep("sent") }}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-full py-3 text-sm font-bold transition-all hover:scale-105 hover:shadow-lg"
+                    style={{ backgroundColor: "oklch(0.62 0.18 145)", color: "oklch(1 0 0)" }}
+                  >
+                    <MessageCircle size={18} />
+                    Enviar por WhatsApp
+                  </a>
+                </div>
               </div>
             )}
           </div>
