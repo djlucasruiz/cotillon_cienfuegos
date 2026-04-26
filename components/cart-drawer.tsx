@@ -104,12 +104,20 @@ export function CartDrawer({
   const [orderId, setOrderId] = useState(generateOrderId)
   const [errors, setErrors] = useState<Partial<Record<keyof OrderForm, string>>>({})
   const [shippingCost, setShippingCost] = useState(0)
+  const [discountPercent, setDiscountPercent] = useState(0)
+  const [discountCode, setDiscountCode] = useState("")
+  const [discountInput, setDiscountInput] = useState("")
+  const [discountError, setDiscountError] = useState("")
+  const [discountLoading, setDiscountLoading] = useState(false)
+  const [isFirstOrder, setIsFirstOrder] = useState(false)
   const [shippingProvincia, setShippingProvincia] = useState("")
 
   const totalItems = items.reduce((s, i) => s + i.quantity, 0)
   // Peso estimado: 0.3kg base + 0.2kg por item
   const estimatedWeight = Math.max(0.5, totalItems * 0.2 + 0.3)
   const totalWithShipping = totalPrice + shippingCost
+  const discountAmount = Math.round(totalPrice * discountPercent / 100)
+  const totalWithDiscount = totalWithShipping - discountAmount
 
   function handleClose() {
     onClose()
@@ -533,6 +541,55 @@ export function CartDrawer({
 
                 {/* Calculador de envío — solo si elige envío */}
                 {form.shippingType === "envio" && (
+                  {/* Código de descuento */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "oklch(0.4 0.03 270)" }}>
+                      Código de descuento
+                    </label>
+                    {isFirstOrder && discountPercent === 15 && !discountCode && (
+                      <div className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ backgroundColor: "oklch(0.62 0.18 145 / 0.1)", color: "oklch(0.45 0.18 145)", border: "1px solid oklch(0.62 0.18 145 / 0.3)" }}>
+                        🎉 ¡15% de descuento aplicado por ser tu primera compra!
+                      </div>
+                    )}
+                    {discountCode && (
+                      <div className="rounded-xl px-3 py-2 text-xs font-semibold flex items-center justify-between" style={{ backgroundColor: "oklch(0.62 0.18 145 / 0.1)", color: "oklch(0.45 0.18 145)", border: "1px solid oklch(0.62 0.18 145 / 0.3)" }}>
+                        <span>✅ Código {discountCode} — {discountPercent}% de descuento</span>
+                        <button onClick={() => { setDiscountCode(""); setDiscountPercent(isFirstOrder ? 15 : 0); setDiscountInput("") }} className="ml-2 opacity-60 hover:opacity-100">✕</button>
+                      </div>
+                    )}
+                    {!discountCode && (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Ingresá tu código..."
+                          value={discountInput}
+                          onChange={(e) => { setDiscountInput(e.target.value.toUpperCase()); setDiscountError("") }}
+                          className="flex-1 rounded-xl px-3 py-2 text-sm border outline-none"
+                          style={{ borderColor: "oklch(0.88 0 0)", backgroundColor: "oklch(1 0 0)" }}
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!discountInput.trim()) return
+                            setDiscountLoading(true)
+                            setDiscountError("")
+                            const res = await fetch(`/api/discount?code=${discountInput.trim()}`)
+                            const data = await res.json()
+                            setDiscountLoading(false)
+                            if (data.error) { setDiscountError(data.error); return }
+                            setDiscountCode(data.code)
+                            setDiscountPercent(data.discount)
+                          }}
+                          disabled={discountLoading}
+                          className="rounded-xl px-4 py-2 text-xs font-bold transition-all hover:opacity-80 disabled:opacity-50"
+                          style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}
+                        >
+                          {discountLoading ? "..." : "Aplicar"}
+                        </button>
+                      </div>
+                    )}
+                    {discountError && <p className="text-xs" style={{ color: "oklch(0.6 0.22 5)" }}>{discountError}</p>}
+                  </div>
+
                   <ShippingCalculator
                     totalWeight={estimatedWeight}
                     selectedCost={shippingCost}
@@ -629,9 +686,15 @@ export function CartDrawer({
                     <span style={{ color: "oklch(0.38 0.12 248)" }}>{formatPrice(shippingCost)}</span>
                   </div>
                 )}
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm" style={{ color: "oklch(0.55 0.18 145)" }}>
+                    <span>Descuento {discountPercent}%</span>
+                    <span>-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm font-bold pt-2 border-t mt-1" style={{ borderColor: "oklch(0.88 0.03 90)" }}>
                   <span style={{ color: "oklch(0.2 0.02 270)" }}>Total</span>
-                  <span style={{ color: "oklch(0.6 0.22 5)" }}>{formatPrice(totalWithShipping)}</span>
+                  <span style={{ color: "oklch(0.6 0.22 5)" }}>{formatPrice(totalWithDiscount)}</span>
                 </div>
               </SummaryBlock>
 
@@ -763,6 +826,18 @@ export function CartDrawer({
                     onClose()
                     document.dispatchEvent(new CustomEvent("open-auth-modal"))
                     return
+                  }
+                  // Check first order
+                  const session = getRetailSession()
+                  if (session) {
+                    fetch(`/api/discount?userId=${session.id}`)
+                      .then(r => r.json())
+                      .then(d => {
+                        if (d.isFirstOrder) {
+                          setIsFirstOrder(true)
+                          setDiscountPercent(15)
+                        }
+                      })
                   }
                   setStep("form")
                 }}
