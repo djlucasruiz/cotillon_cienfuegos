@@ -227,14 +227,25 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
             {/* Mobile: login/usuario */}
             <div className="flex items-center gap-2 pt-3">
               {session ? (
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 text-sm font-medium"
-                  style={{ color: "oklch(0.55 0.2 5)" }}
-                >
-                  <LogOut size={14} />
-                  Cerrar sesión ({session.name.split(" ")[0]})
-                </button>
+                <div className="flex flex-col gap-2 w-full">
+                  <Link
+                    href="/pedidos"
+                    className="flex items-center gap-2 text-sm font-medium"
+                    style={{ color: "oklch(0.38 0.12 248)" }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <Package size={14} />
+                    Mis Pedidos
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-sm font-medium"
+                    style={{ color: "oklch(0.55 0.2 5)" }}
+                  >
+                    <LogOut size={14} />
+                    Cerrar sesión ({session.name.split(" ")[0]})
+                  </button>
+                </div>
               ) : (
                 <button
                   onClick={() => { setAuthOpen(true); setMenuOpen(false) }}
