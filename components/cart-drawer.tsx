@@ -164,7 +164,7 @@ export function CartDrawer({
   async function saveOrder() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      await fetch("/api/orders", {
+      const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -179,6 +179,26 @@ export function CartDrawer({
           notes: `Nombre: ${form.nombre} | Tel: ${form.telefono} | Email: ${form.email} | Pago: ${PAYMENT_LABELS[form.paymentType]} | ${form.nota}`,
         })
       })
+      const order = await res.json()
+      if (form.email && order.order_number) {
+        await fetch("/api/email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: form.email,
+            orderNumber: order.order_number,
+            items,
+            total: totalPrice + shippingCost,
+            shippingCost,
+            nombre: form.nombre,
+            telefono: form.telefono,
+            paymentType: PAYMENT_LABELS[form.paymentType],
+            shippingType: form.shippingType,
+            direccion: form.direccion,
+            provincia: form.provincia,
+          })
+        })
+      }
     } catch (e) {
       console.error("Error guardando pedido:", e)
     }
