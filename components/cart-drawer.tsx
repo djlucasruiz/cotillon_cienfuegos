@@ -887,8 +887,8 @@ export function CartDrawer({
                       })
                       const data = await res.json()
                       if (data.init_point) {
-                        saveOrder()
-                        onClear()
+                        // order saved after payment confirmation via webhook
+                        // cart cleared after redirect
                         window.location.href = data.init_point
                       }
                     }}
