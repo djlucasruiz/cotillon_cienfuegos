@@ -18,12 +18,25 @@ export default function PedidosPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [session, setSession] = useState<any>(null)
+  const [mpStatus, setMpStatus] = useState<{ status: string; orderNum: string } | null>(null)
 
   useEffect(() => {
     const s = getRetailSession()
     setSession(s)
     if (s) fetchOrdersByEmail(s.email)
     else setLoading(false)
+
+    // Check if coming back from MP payment
+    const params = new URLSearchParams(window.location.search)
+    const status = params.get("status")
+    const orderNum = params.get("order")
+    if (status === "success" && orderNum) {
+      setMpStatus({ status: "success", orderNum })
+    } else if (status === "failure" && orderNum) {
+      setMpStatus({ status: "failure", orderNum })
+    } else if (status === "pending" && orderNum) {
+      setMpStatus({ status: "pending", orderNum })
+    }
   }, [])
 
   async function fetchOrdersByEmail(email: string) {
@@ -52,6 +65,34 @@ export default function PedidosPage() {
         <p className="text-sm mb-6" style={{ color: "oklch(0.55 0 0)" }}>
           {session ? `Pedidos de ${session.email}` : "Iniciá sesión para ver tus pedidos o buscá por número"}
         </p>
+        {mpStatus && (
+          <div className="rounded-2xl p-4 mb-6 border" style={{
+            backgroundColor: mpStatus.status === "success" ? "oklch(0.62 0.18 145 / 0.1)" : mpStatus.status === "failure" ? "oklch(0.6 0.22 5 / 0.1)" : "oklch(0.72 0.2 50 / 0.1)",
+            borderColor: mpStatus.status === "success" ? "oklch(0.62 0.18 145 / 0.3)" : mpStatus.status === "failure" ? "oklch(0.6 0.22 5 / 0.3)" : "oklch(0.72 0.2 50 / 0.3)",
+          }}>
+            {mpStatus.status === "success" && (
+              <div>
+                <p className="font-bold text-sm mb-1" style={{ color: "oklch(0.45 0.18 145)" }}>✅ Pago confirmado - Pedido #{mpStatus.orderNum}</p>
+                <p className="text-xs mb-3" style={{ color: "oklch(0.5 0 0)" }}>Tu pago fue procesado. Por favor avisanos por WhatsApp para coordinar el envío.</p>
+                
+                  href={`https://wa.me/5493454289474?text=${encodeURIComponent(`Hola! Acabo de pagar el pedido #${mpStatus.orderNum} por Mercado Pago. Quedo a la espera de confirmar el envío.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold"
+                  style={{ backgroundColor: "oklch(0.55 0.16 145)", color: "oklch(1 0 0)" }}
+                >
+                  💬 Avisar por WhatsApp
+                </a>
+              </div>
+            )}
+            {mpStatus.status === "failure" && (
+              <p className="font-bold text-sm" style={{ color: "oklch(0.55 0.22 5)" }}>❌ El pago no fue procesado. Podés intentar nuevamente o elegir otro método.</p>
+            )}
+            {mpStatus.status === "pending" && (
+              <p className="font-bold text-sm" style={{ color: "oklch(0.6 0.2 50)" }}>⏳ Pago pendiente #{mpStatus.orderNum}. Te avisaremos cuando se confirme.</p>
+            )}
+          </div>
+        )}
         <div className="flex gap-2 mb-8">
           <input
             type="text"
