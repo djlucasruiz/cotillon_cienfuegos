@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ShoppingCart, Menu, X, Phone, MapPin, Star, User, LogOut, ChevronDown, Settings } from "lucide-react"
+import { ShoppingCart, Menu, X, Phone, MapPin, Star, User, LogOut, ChevronDown, Settings, Package } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { AuthModal } from "@/components/auth-modal"
 import { getRetailSession, logoutRetailClient } from "@/lib/retail-store"
@@ -141,6 +141,15 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
                       <p className="text-xs font-bold truncate" style={{ color: "oklch(0.2 0.02 270)" }}>{session.name}</p>
                       <p className="text-xs truncate mt-0.5" style={{ color: "oklch(0.6 0 0)" }}>{session.email}</p>
                     </div>
+                    <Link
+                      href="/pedidos"
+                      className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium transition-opacity hover:opacity-70 border-b"
+                      style={{ borderColor: "oklch(0.93 0 0)", color: "oklch(0.38 0.12 248)" }}
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Package size={14} />
+                      Mis Pedidos
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium transition-opacity hover:opacity-70"
