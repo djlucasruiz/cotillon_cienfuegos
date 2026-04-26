@@ -1,9 +1,8 @@
 "use client"
-
 import { useState, useEffect } from "react"
-import { supabase } from "@/lib/supabase"
 import { Package, Search, Clock, CheckCircle2, Truck, XCircle, ShoppingBag } from "lucide-react"
 import { formatPrice } from "@/lib/products"
+import { getRetailSession } from "@/lib/retail-store"
 
 const STATUS_INFO: Record<string, { label: string; color: string; icon: any }> = {
   pendiente:   { label: "Pendiente",   color: "oklch(0.72 0.2 50)",   icon: Clock },
@@ -18,20 +17,20 @@ export default function PedidosPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [user, setUser] = useState<any>(null)
+  const [session, setSession] = useState<any>(null)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user)
-      if (data.user) fetchOrders(data.user.id)
-      else setLoading(false)
-    })
+    const s = getRetailSession()
+    setSession(s)
+    if (s) fetchOrdersByEmail(s.email)
+    else setLoading(false)
   }, [])
 
-  async function fetchOrders(userId: string) {
-    const res = await fetch(`/api/orders?userId=${userId}`)
+  async function fetchOrdersByEmail(email: string) {
+    setLoading(true)
+    const res = await fetch(`/api/orders?email=${encodeURIComponent(email)}`)
     const data = await res.json()
-    setOrders(data)
+    setOrders(Array.isArray(data) ? data : [])
     setLoading(false)
   }
 
@@ -40,15 +39,9 @@ export default function PedidosPage() {
     setLoading(true)
     const res = await fetch(`/api/orders?orderNumber=${search.trim()}`)
     const data = await res.json()
-    setOrders(Array.isArray(data) ? data : [data])
+    setOrders(Array.isArray(data) ? data : [data].filter(Boolean))
     setLoading(false)
   }
-
-  if (loading) return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="w-8 h-8 rounded-full border-4 animate-spin" style={{ borderColor: "oklch(0.38 0.12 248)", borderTopColor: "transparent" }} />
-    </main>
-  )
 
   return (
     <main className="min-h-screen py-12 px-4" style={{ backgroundColor: "oklch(0.97 0 0)" }}>
@@ -56,15 +49,13 @@ export default function PedidosPage() {
         <h1 className="text-2xl font-extrabold mb-2" style={{ color: "oklch(0.2 0.02 270)" }}>
           Mis Pedidos
         </h1>
-        <p className="text-sm mb-8" style={{ color: "oklch(0.55 0 0)" }}>
-          Buscá tu pedido por número o iniciá sesión para ver todos tus pedidos
+        <p className="text-sm mb-6" style={{ color: "oklch(0.55 0 0)" }}>
+          {session ? `Pedidos de ${session.email}` : "Iniciá sesión para ver tus pedidos o buscá por número"}
         </p>
-
-        {/* Buscador por número */}
         <div className="flex gap-2 mb-8">
           <input
             type="text"
-            placeholder="Número de pedido..."
+            placeholder="Buscar por número de pedido..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && searchByNumber()}
@@ -80,12 +71,16 @@ export default function PedidosPage() {
             Buscar
           </button>
         </div>
-
-        {/* Lista de pedidos */}
-        {orders.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="w-8 h-8 rounded-full border-4 animate-spin" style={{ borderColor: "oklch(0.38 0.12 248)", borderTopColor: "transparent" }} />
+          </div>
+        ) : orders.length === 0 ? (
           <div className="text-center py-20">
             <ShoppingBag size={40} className="mx-auto mb-3" style={{ color: "oklch(0.75 0 0)" }} />
-            <p className="font-semibold" style={{ color: "oklch(0.45 0 0)" }}>No hay pedidos para mostrar</p>
+            <p className="font-semibold" style={{ color: "oklch(0.45 0 0)" }}>
+              {session ? "No tenés pedidos todavía" : "No hay pedidos para mostrar"}
+            </p>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -96,12 +91,12 @@ export default function PedidosPage() {
                 <div key={order.id} className="rounded-2xl border p-5" style={{ backgroundColor: "oklch(1 0 0)", borderColor: "oklch(0.9 0 0)" }}>
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-xs" style={{ color: "oklch(0.6 0 0)" }}>Pedido #{order.order_number}</p>
+                      <p className="font-bold" style={{ color: "oklch(0.2 0.02 270)" }}>Pedido #{order.order_number}</p>
                       <p className="text-xs mt-0.5" style={{ color: "oklch(0.7 0 0)" }}>
-                        {new Date(order.created_at).toLocaleDateString("es-AR")}
+                        {new Date(order.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold" style={{ backgroundColor: `${status.color}20`, color: status.color }}>
+                    <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold" style={{ backgroundColor: status.color + "20", color: status.color }}>
                       <Icon size={13} />
                       {status.label}
                     </div>
@@ -109,13 +104,13 @@ export default function PedidosPage() {
                   <div className="flex flex-col gap-1 mb-3">
                     {order.items?.map((item: any, i: number) => (
                       <p key={i} className="text-sm" style={{ color: "oklch(0.3 0.02 270)" }}>
-                        {item.quantity}x {item.product?.name} — {formatPrice(item.product?.price * item.quantity)}
+                        {item.quantity}x {item.product?.name} — {formatPrice((item.product?.price || 0) * item.quantity)}
                       </p>
                     ))}
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "oklch(0.93 0 0)" }}>
                     <p className="text-xs" style={{ color: "oklch(0.6 0 0)" }}>
-                      Envío: {order.shipping_province || "Retiro en local"}
+                      {order.shipping_province ? "Envio a " + order.shipping_province : "Retiro en local"}
                     </p>
                     <p className="font-extrabold" style={{ color: "oklch(0.38 0.12 248)" }}>
                       {formatPrice(order.total)}

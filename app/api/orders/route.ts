@@ -5,11 +5,13 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const userId = searchParams.get("userId")
   const orderNumber = searchParams.get("orderNumber")
+  const email = searchParams.get("email")
 
   let query = supabaseAdmin.from("orders").select("*").order("created_at", { ascending: false })
   
   if (userId) query = query.eq("user_id", userId)
   if (orderNumber) query = query.eq("order_number", parseInt(orderNumber))
+  if (email) query = query.ilike("notes", `%Email: ${email}%`)
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
