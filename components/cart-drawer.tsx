@@ -9,6 +9,7 @@ import {
 import { type CartItem } from "@/hooks/use-cart"
 import { formatPrice } from "@/lib/products"
 import { ShippingCalculator } from "@/components/shipping-calculator"
+import { supabase } from "@/lib/supabase"
 
 interface CartDrawerProps {
   open: boolean
@@ -158,6 +159,29 @@ export function CartDrawer({
     ]
 
     return lines.filter((l) => l !== null).join("\n")
+  }
+
+  async function saveOrder() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user?.id || null,
+          status: "pendiente",
+          items: items,
+          subtotal: totalPrice,
+          shipping_cost: shippingCost,
+          shipping_cp: form.codigoPostal || null,
+          shipping_province: form.provincia || null,
+          total: totalPrice + shippingCost,
+          notes: `Nombre: ${form.nombre} | Tel: ${form.telefono} | Email: ${form.email} | Pago: ${PAYMENT_LABELS[form.paymentType]} | ${form.nota}`,
+        })
+      })
+    } catch (e) {
+      console.error("Error guardando pedido:", e)
+    }
   }
 
   const whatsappUrl = `https://wa.me/5493454289474?text=${encodeURIComponent(buildWhatsAppMessage())}`
@@ -741,7 +765,7 @@ export function CartDrawer({
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => { onClear(); setStep("sent") }}
+                  onClick={() => { saveOrder(); onClear(); setStep("sent") }}
                   className="flex-1 flex items-center justify-center gap-2 rounded-full py-3 text-sm font-bold transition-all hover:scale-105 hover:shadow-lg"
                   style={{ backgroundColor: "oklch(0.62 0.18 145)", color: "oklch(1 0 0)" }}
                 >
