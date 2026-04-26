@@ -11,7 +11,6 @@ import { formatPrice } from "@/lib/products"
 import { ShippingCalculator } from "@/components/shipping-calculator"
 import { getRetailSession } from "@/lib/retail-store"
 import { supabase } from "@/lib/supabase"
-import { getRetailSession } from "@/lib/retail-store"
 
 interface CartDrawerProps {
   open: boolean
