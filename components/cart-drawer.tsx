@@ -539,10 +539,8 @@ export function CartDrawer({
                   </div>
                 )}
 
-                {/* Calculador de envío — solo si elige envío */}
-                {form.shippingType === "envio" && (
-                  {/* Código de descuento */}
-                  <div className="flex flex-col gap-2">
+                {/* Código de descuento */}
+                <div className="flex flex-col gap-2">
                     <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "oklch(0.4 0.03 270)" }}>
                       Código de descuento
                     </label>
