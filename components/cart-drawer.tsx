@@ -824,15 +824,18 @@ export function CartDrawer({
                     document.dispatchEvent(new CustomEvent("open-auth-modal"))
                     return
                   }
-                  // Check first order
+                  // Check first order by email
                   const sessionCheck = getRetailSession()
                   if (sessionCheck) {
-                    fetch(`/api/discount?userId=${sessionCheck.id}`)
+                    fetch(`/api/discount?email=${encodeURIComponent(sessionCheck.email)}`)
                       .then(r => r.json())
                       .then(d => {
                         if (d.isFirstOrder) {
                           setIsFirstOrder(true)
                           setDiscountPercent(15)
+                        } else {
+                          setIsFirstOrder(false)
+                          setDiscountPercent(0)
                         }
                       })
                   }

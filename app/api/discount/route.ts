@@ -8,13 +8,17 @@ export async function GET(req: NextRequest) {
 
   if (!code && !userId) return NextResponse.json({ error: "Parametros requeridos" }, { status: 400 })
 
-  // Verificar si es primera compra
-  if (userId && !code) {
-    const { data } = await supabaseAdmin
-      .from("orders")
-      .select("id")
-      .eq("user_id", userId)
-      .limit(1)
+  const email = searchParams.get("email")
+
+  // Verificar si es primera compra por email
+  if ((userId || email) && !code) {
+    let query = supabaseAdmin.from("orders").select("id").limit(1)
+    if (email) {
+      query = query.ilike("notes", `%Email: ${email}%`)
+    } else {
+      query = query.eq("user_id", userId)
+    }
+    const { data } = await query
     return NextResponse.json({ isFirstOrder: !data || data.length === 0 })
   }
 
