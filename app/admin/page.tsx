@@ -53,8 +53,18 @@ const inputStyle = { borderColor: "oklch(0.88 0.03 90)", backgroundColor: "oklch
 export default function AdminPage() {
   const router = useRouter()
   const [checking, setChecking] = useState(true)
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "wholesale">("products")
+  const [activeTab, setActiveTab] = useState<"products" | "categories" | "wholesale" | "tienda">("products")
   const [saved, setSaved] = useState(false)
+  const [logoUrl, setLogoUrl] = useState<string>(() => {
+    if (typeof window === "undefined") return "/logo.jpg"
+    return localStorage.getItem("cc_logo") || "/logo.jpg"
+  })
+
+  function saveLogo(url: string) {
+    setLogoUrl(url)
+    localStorage.setItem("cc_logo", url)
+    triggerSaved()
+  }
 
   // Products
   const [products, setProducts] = useState<Product[]>([])
@@ -207,6 +217,7 @@ export default function AdminPage() {
             { id: "products", label: "Productos", icon: Package },
             { id: "categories", label: "Categorías", icon: Tag },
             { id: "wholesale", label: "Mayoristas", icon: Users },
+            { id: "tienda", label: "Tienda", icon: ShoppingBag },
           ].map(({ id, label, icon: Icon }) => (
             <button key={id}
               onClick={() => setActiveTab(id as "products" | "categories" | "wholesale")}
@@ -613,6 +624,31 @@ export default function AdminPage() {
             <div className="rounded-2xl p-4 border text-xs"
               style={{ backgroundColor: "oklch(0.38 0.12 248 / 0.05)", borderColor: "oklch(0.38 0.12 248 / 0.2)", color: "oklch(0.45 0 0)" }}>
               Los clientes mayoristas acceden desde <strong>/mayoristas/login</strong> con su usuario y contraseña.
+            </div>
+          </div>
+        )}
+
+        {activeTab === "tienda" && (
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
+            <div className="rounded-2xl border p-6" style={{ backgroundColor: "oklch(1 0 0)", borderColor: "oklch(0.9 0 0)" }}>
+              <p className="text-sm font-extrabold mb-1" style={{ color: "oklch(0.2 0.02 270)" }}>Logo de la tienda</p>
+              <p className="text-xs mb-5" style={{ color: "oklch(0.55 0 0)" }}>
+                Cambia el logo que aparece en el header. Arrastra una imagen o selecciona desde tu PC.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                <div className="flex-1">
+                  <ImageUploader
+                    value={logoUrl}
+                    onChange={(url) => saveLogo(url)}
+                    label="Logo"
+                    previewSize="lg"
+                  />
+                </div>
+                <div className="flex flex-col gap-2 p-4 rounded-xl border" style={{ borderColor: "oklch(0.88 0 0)", backgroundColor: "oklch(0.97 0 0)" }}>
+                  <p className="text-xs font-semibold" style={{ color: "oklch(0.45 0 0)" }}>Vista previa actual</p>
+                  <img src={logoUrl} alt="Logo actual" className="w-32 object-contain rounded-lg" />
+                </div>
+              </div>
             </div>
           </div>
         )}
