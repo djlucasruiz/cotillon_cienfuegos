@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   X, Trash2, Plus, Minus, ShoppingBag, MessageCircle,
   ArrowRight, ArrowLeft, User, MapPin, Package, CheckCircle2,
@@ -9,7 +9,9 @@ import {
 import { type CartItem } from "@/hooks/use-cart"
 import { formatPrice } from "@/lib/products"
 import { ShippingCalculator } from "@/components/shipping-calculator"
+import { getRetailSession } from "@/lib/retail-store"
 import { supabase } from "@/lib/supabase"
+import { getRetailSession } from "@/lib/retail-store"
 
 interface CartDrawerProps {
   open: boolean
@@ -82,6 +84,23 @@ export function CartDrawer({
   onClear,
 }: CartDrawerProps) {
   const [step, setStep] = useState<Step>("cart")
+  useEffect(() => {
+    const session = getRetailSession()
+    if (session) {
+      setForm((prev) => ({ ...prev, nombre: session.name || prev.nombre, email: session.email || prev.email }))
+    }
+  }, [])
+  // Pre-fill form with session data
+  useEffect(() => {
+    const session = getRetailSession()
+    if (session) {
+      setForm((prev) => ({
+        ...prev,
+        nombre: session.name || prev.nombre,
+        email: session.email || prev.email,
+      }))
+    }
+  }, [])
   const [form, setForm] = useState<OrderForm>(defaultForm)
   const [orderId, setOrderId] = useState(generateOrderId)
   const [errors, setErrors] = useState<Partial<Record<keyof OrderForm, string>>>({})
@@ -739,7 +758,14 @@ export function CartDrawer({
             {/* Botones por paso */}
             {step === "cart" && (
               <button
-                onClick={() => setStep("form")}
+                onClick={() => {
+                  const session = getRetailSession()
+                    onClose()
+                    document.dispatchEvent(new CustomEvent("open-auth-modal"))
+                    return
+                  }
+                  setStep("form")
+                }}
                 className="flex items-center justify-center gap-2 rounded-full py-3 text-sm font-bold transition-all hover:scale-105 hover:shadow-lg"
                 style={{ backgroundColor: "oklch(0.6 0.22 5)", color: "oklch(1 0 0)" }}
               >

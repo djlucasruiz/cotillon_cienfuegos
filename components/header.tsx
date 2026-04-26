@@ -24,6 +24,12 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
     setSession(getRetailSession())
   }, [])
 
+  useEffect(() => {
+    function handleOpenAuth() { setAuthOpen(true) }
+    document.addEventListener("open-auth-modal", handleOpenAuth)
+    return () => document.removeEventListener("open-auth-modal", handleOpenAuth)
+  }, [])
+
   // Cerrar menú usuario al hacer click fuera
   useEffect(() => {
     function handleClick(e: MouseEvent) {
