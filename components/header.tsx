@@ -89,6 +89,7 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
           <Link href="#inicio" className="flex items-center shrink-0">
             <Image
               src="/logo.jpg"
+              unoptimized
               alt="Cotillón Cienfuegos Concordia"
               width={120}
               height={60}
