@@ -598,7 +598,6 @@ export function CartDrawer({
                       if (provincia) setField("provincia", provincia)
                     }}
                   />
-                )}
               </section>
 
               {/* Metodo de pago */}
