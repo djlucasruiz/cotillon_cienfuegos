@@ -825,9 +825,9 @@ export function CartDrawer({
                     return
                   }
                   // Check first order
-                  const session = getRetailSession()
-                  if (session) {
-                    fetch(`/api/discount?userId=${session.id}`)
+                  const sessionCheck = getRetailSession()
+                  if (sessionCheck) {
+                    fetch(`/api/discount?userId=${sessionCheck.id}`)
                       .then(r => r.json())
                       .then(d => {
                         if (d.isFirstOrder) {
