@@ -74,6 +74,7 @@ export default function PedidosPage() {
               <div>
                 <p className="font-bold text-sm mb-1" style={{ color: "oklch(0.45 0.18 145)" }}>✅ Pago confirmado - Pedido #{mpStatus.orderNum}</p>
                 <p className="text-xs mb-3" style={{ color: "oklch(0.5 0 0)" }}>Tu pago fue procesado. Por favor avisanos por WhatsApp para coordinar el envío.</p>
+                <a
                 
                   href={`https://wa.me/5493454289474?text=${encodeURIComponent(`Hola! Acabo de pagar el pedido #${mpStatus.orderNum} por Mercado Pago. Quedo a la espera de confirmar el envío.`)}`}
                   target="_blank"
