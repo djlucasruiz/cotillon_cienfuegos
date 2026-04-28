@@ -8,8 +8,8 @@ import {
   Building2, User, Phone, BadgePercent, Search
 } from "lucide-react"
 import { getWholesaleSession, wholesaleLogout, type WholesaleClient } from "@/lib/wholesale-store"
-import { getProducts } from "@/lib/products-store"
-import { categories, formatPrice, type Product } from "@/lib/products"
+import { getProductsFromDB, getCategoriesFromDB } from "@/lib/products-store"
+import { formatPrice, type Product, type Category } from "@/lib/products"
 import { useCart } from "@/hooks/use-cart"
 import { CartDrawer } from "@/components/cart-drawer"
 
@@ -17,6 +17,7 @@ export default function WholesalePage() {
   const router = useRouter()
   const [client, setClient] = useState<WholesaleClient | null>(null)
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [search, setSearch] = useState("")
   const [selectedCat, setSelectedCat] = useState("todos")
   const [cartOpen, setCartOpen] = useState(false)
@@ -29,7 +30,8 @@ export default function WholesalePage() {
       return
     }
     setClient(session)
-    setProducts(getProducts())
+    getProductsFromDB().then(setProducts)
+    getCategoriesFromDB().then(setCategories)
   }, [router])
 
   function handleLogout() {
@@ -273,6 +275,7 @@ export default function WholesalePage() {
         onRemove={removeFromCart}
         onUpdateQuantity={updateQuantity}
         onClear={clearCart}
+        skipAuthCheck={true}
       />
     </div>
   )

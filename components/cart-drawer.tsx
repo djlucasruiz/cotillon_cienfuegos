@@ -20,6 +20,7 @@ interface CartDrawerProps {
   onUpdateQuantity: (id: string, qty: number) => void
   onRemove: (id: string) => void
   onClear: () => void
+  skipAuthCheck?: boolean
 }
 
 type Step = "cart" | "form" | "confirm" | "sent"
@@ -81,6 +82,7 @@ export function CartDrawer({
   onUpdateQuantity,
   onRemove,
   onClear,
+  skipAuthCheck = false,
 }: CartDrawerProps) {
   const [step, setStep] = useState<Step>("cart")
   useEffect(() => {
@@ -819,16 +821,14 @@ export function CartDrawer({
             {step === "cart" && (
               <button
                 onClick={() => {
-                  const session = getRetailSession()
-                  if (!session) {
-                    onClose()
-                    document.dispatchEvent(new CustomEvent("open-auth-modal"))
-                    return
-                  }
-                  // Check first order by email
-                  const sessionCheck = getRetailSession()
-                  if (sessionCheck) {
-                    fetch(`/api/discount?email=${encodeURIComponent(sessionCheck.email)}`)
+                  if (!skipAuthCheck) {
+                    const session = getRetailSession()
+                    if (!session) {
+                      onClose()
+                      document.dispatchEvent(new CustomEvent("open-auth-modal"))
+                      return
+                    }
+                    fetch(`/api/discount?email=${encodeURIComponent(session.email)}`)
                       .then(r => r.json())
                       .then(d => {
                         if (d.isFirstOrder) {
