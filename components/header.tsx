@@ -126,8 +126,17 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && searchQuery.trim()) {
-                    window.location.href = `/#productos?q=${encodeURIComponent(searchQuery)}`
+                    // Find the catalog search input and update it
+                    const catalogInput = document.querySelector("#productos input[type=text]") as HTMLInputElement
+                    if (catalogInput) {
+                      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set
+                      nativeInputValueSetter?.call(catalogInput, searchQuery)
+                      catalogInput.dispatchEvent(new Event("input", { bubbles: true }))
+                      catalogInput.focus()
+                    }
+                    document.getElementById("productos")?.scrollIntoView({ behavior: "smooth" })
                     setSearchOpen(false)
+                    setSearchQuery("")
                   }
                   if (e.key === "Escape") setSearchOpen(false)
                 }}
