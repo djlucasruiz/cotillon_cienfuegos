@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ShoppingCart, Menu, X, Phone, MapPin, Star, User, LogOut, ChevronDown, Settings, Package } from "lucide-react"
+import { ShoppingCart, Menu, X, Phone, MapPin, Star, User, LogOut, ChevronDown, Settings, Package, Search } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { AuthModal } from "@/components/auth-modal"
 import { getRetailSession, logoutRetailClient } from "@/lib/retail-store"
