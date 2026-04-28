@@ -8,7 +8,7 @@ import {
   Building2, User, Phone, BadgePercent, Search
 } from "lucide-react"
 import { getWholesaleSession, wholesaleLogout, type WholesaleClient } from "@/lib/wholesale-store"
-import { getProductsFromDB } from "@/lib/products-store"
+import { getProducts } from "@/lib/products-store"
 import { categories, formatPrice, type Product } from "@/lib/products"
 import { useCart } from "@/hooks/use-cart"
 import { CartDrawer } from "@/components/cart-drawer"
@@ -20,7 +20,7 @@ export default function WholesalePage() {
   const [search, setSearch] = useState("")
   const [selectedCat, setSelectedCat] = useState("todos")
   const [cartOpen, setCartOpen] = useState(false)
-  const { items, totalItems, totalPrice, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
+  const { items, totalItems, totalPrice, addItem, removeItem, updateQuantity, clearCart } = useCart()
 
   useEffect(() => {
     const session = getWholesaleSession()
@@ -29,7 +29,7 @@ export default function WholesalePage() {
       return
     }
     setClient(session)
-    getProductsFromDB().then(setProducts)
+    setProducts(getProducts())
   }, [router])
 
   function handleLogout() {
@@ -222,7 +222,7 @@ export default function WholesalePage() {
                   </div>
 
                   <button
-                    onClick={() => addToCart({ ...product, price: wPrice })}
+                    onClick={() => addItem({ ...product, price: wPrice })}
                     className="w-full rounded-xl py-2 text-xs font-bold transition-all hover:opacity-90 mt-1"
                     style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}
                   >
@@ -266,11 +266,10 @@ export default function WholesalePage() {
       </div>
 
       <CartDrawer
-        open={cartOpen}
+        isOpen={cartOpen}
         onClose={() => setCartOpen(false)}
         items={items}
-        totalPrice={totalPrice}
-        onRemove={removeFromCart}
+        onRemove={removeItem}
         onUpdateQuantity={updateQuantity}
         onClear={clearCart}
       />
