@@ -20,7 +20,7 @@ export default function WholesalePage() {
   const [search, setSearch] = useState("")
   const [selectedCat, setSelectedCat] = useState("todos")
   const [cartOpen, setCartOpen] = useState(false)
-  const { items, totalItems, totalPrice, addItem, removeItem, updateQuantity, clearCart } = useCart()
+  const { items, totalItems, totalPrice, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
 
   useEffect(() => {
     const session = getWholesaleSession()
@@ -222,7 +222,7 @@ export default function WholesalePage() {
                   </div>
 
                   <button
-                    onClick={() => addItem({ ...product, price: wPrice })}
+                    onClick={() => addToCart({ ...product, price: wPrice })}
                     className="w-full rounded-xl py-2 text-xs font-bold transition-all hover:opacity-90 mt-1"
                     style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}
                   >
@@ -266,10 +266,10 @@ export default function WholesalePage() {
       </div>
 
       <CartDrawer
-        isOpen={cartOpen}
+        open={cartOpen}
         onClose={() => setCartOpen(false)}
         items={items}
-        onRemove={removeItem}
+        onRemove={removeFromCart}
         onUpdateQuantity={updateQuantity}
         onClear={clearCart}
       />
