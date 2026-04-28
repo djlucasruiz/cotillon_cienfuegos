@@ -65,11 +65,8 @@ export function Hero() {
           </div>
 
           {/* Hero image */}
-          <div className="flex-1 w-full max-w-md">
-            <div className="flex-1 w-full max-w-lg mx-auto">
+          <div className="flex-1 w-full max-w-lg mx-auto">
             <Carousel />
-          </div>
-            </div>
           </div>
         </div>
 
