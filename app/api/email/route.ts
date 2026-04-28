@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("es-AR", {
     style: "currency",
@@ -102,6 +100,7 @@ export async function POST(req: NextRequest) {
   `
 
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
     const { data, error } = await resend.emails.send({
       from: "Cotillón Cienfuegos <pedidos@cienfuegoscotillonconcordia.com>",
       to: [to],

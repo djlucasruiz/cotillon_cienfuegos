@@ -2,14 +2,11 @@ import { NextRequest, NextResponse } from "next/server"
 import { MercadoPagoConfig, Payment } from "mercadopago"
 import { supabaseAdmin } from "@/lib/supabase"
 
-const client = new MercadoPagoConfig({ 
-  accessToken: process.env.MP_ACCESS_TOKEN! 
-})
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     if (body.type === "payment") {
+      const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
       const payment = new Payment(client)
       const data = await payment.get({ id: body.data.id })
       if (data.status === "approved") {
