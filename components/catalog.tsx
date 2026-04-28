@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import { categories, type Product } from "@/lib/products"
-import { getProducts } from "@/lib/products-store"
+import { getProductsFromDB } from "@/lib/products-store"
 import { ProductCard } from "@/components/product-card"
 
 interface CatalogProps {
@@ -16,7 +16,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
   const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
-    setProducts(getProducts())
+    getProductsFromDB().then(setProducts)
   }, [])
 
   const filtered = products.filter((p) => {

@@ -8,7 +8,7 @@ import {
   Building2, User, Phone, BadgePercent, Search
 } from "lucide-react"
 import { getWholesaleSession, wholesaleLogout, type WholesaleClient } from "@/lib/wholesale-store"
-import { getProducts } from "@/lib/products-store"
+import { getProductsFromDB } from "@/lib/products-store"
 import { categories, formatPrice, type Product } from "@/lib/products"
 import { useCart } from "@/hooks/use-cart"
 import { CartDrawer } from "@/components/cart-drawer"
@@ -29,7 +29,7 @@ export default function WholesalePage() {
       return
     }
     setClient(session)
-    setProducts(getProducts())
+    getProductsFromDB().then(setProducts)
   }, [router])
 
   function handleLogout() {

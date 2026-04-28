@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 import { ImageUploader } from "@/components/image-uploader"
 import { isAuthenticated, logout } from "@/lib/auth"
-import { getProducts, saveProducts, resetProducts, getCategories, saveCategories, resetCategories } from "@/lib/products-store"
+import { getProducts, saveProducts, resetProducts, getCategories, saveCategories, resetCategories, getProductsFromDB, getCategoriesFromDB } from "@/lib/products-store"
 import { categories as defaultCategories, formatPrice, type Product, type Category } from "@/lib/products"
 import { getClients, createClient, updateClient, deleteClient, type WholesaleClient } from "@/lib/wholesale-store"
 
@@ -91,8 +91,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!isAuthenticated()) { router.replace("/admin/login"); return }
-    setProducts(getProducts())
-    setCategories(getCategories())
+    getProductsFromDB().then(setProducts)
+    getCategoriesFromDB().then(setCategories)
     setClients(getClients())
     setChecking(false)
   }, [router])
