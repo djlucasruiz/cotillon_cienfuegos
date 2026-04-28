@@ -56,6 +56,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "wholesale" | "tienda">("products")
   const [saved, setSaved] = useState(false)
   const [syncing, setSyncing] = useState(false)
+  const [carouselImages, setCarouselImages] = useState<any[]>([])
+  const [newCarouselImage, setNewCarouselImage] = useState({ image_url: "", title: "", subtitle: "" })
   const [logoUrl, setLogoUrl] = useState<string>(() => {
     if (typeof window === "undefined") return "/logo.jpg"
     return localStorage.getItem("cc_logo") || "/logo.jpg"
@@ -94,6 +96,7 @@ export default function AdminPage() {
     if (!isAuthenticated()) { router.replace("/admin/login"); return }
     getProductsFromDB().then(setProducts)
     getCategoriesFromDB().then(setCategories)
+    fetch("/api/carousel").then(r => r.json()).then(data => { if (Array.isArray(data)) setCarouselImages(data) })
     setClients(getClients())
     setChecking(false)
   }, [router])
@@ -685,6 +688,52 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            {/* Carrusel de novedades */}
+            <div className="rounded-2xl border p-6 mt-6" style={{ backgroundColor: "oklch(1 0 0)", borderColor: "oklch(0.9 0 0)" }}>
+              <p className="text-sm font-extrabold mb-1" style={{ color: "oklch(0.2 0.02 270)" }}>Carrusel de novedades</p>
+              <p className="text-xs mb-5" style={{ color: "oklch(0.55 0 0)" }}>Gestioná las imágenes del carrusel de la página principal.</p>
+              <div className="flex flex-col gap-4">
+                {carouselImages.map((img, idx) => (
+                  <div key={img.id || idx} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: "oklch(0.9 0 0)" }}>
+                    <img src={img.image_url} alt={img.title || ""} className="w-16 h-16 object-cover rounded-lg" />
+                    <div className="flex-1">
+                      <p className="text-xs font-bold" style={{ color: "oklch(0.2 0.02 270)" }}>{img.title || "Sin título"}</p>
+                      <p className="text-xs" style={{ color: "oklch(0.6 0 0)" }}>{img.subtitle || ""}</p>
+                    </div>
+                    <button onClick={async () => { await fetch(`/api/carousel?id=${img.id}`, { method: "DELETE" }); setCarouselImages(prev => prev.filter((_, j) => j !== idx)) }}
+                      className="text-xs px-3 py-1.5 rounded-lg border" style={{ borderColor: "oklch(0.6 0.22 5)", color: "oklch(0.6 0.22 5)" }}>
+                      Eliminar
+                    </button>
+                  </div>
+                ))}
+                <div className="rounded-xl border p-4 flex flex-col gap-3" style={{ borderColor: "oklch(0.88 0 0)", backgroundColor: "oklch(0.98 0 0)" }}>
+                  <p className="text-xs font-bold" style={{ color: "oklch(0.4 0 0)" }}>Agregar imagen</p>
+                  <ImageUploader value={newCarouselImage.image_url} onChange={(url) => setNewCarouselImage(prev => ({ ...prev, image_url: url }))} label="Imagen" />
+                  <input type="text" placeholder="Título (opcional)" value={newCarouselImage.title}
+                    onChange={(e) => setNewCarouselImage(prev => ({ ...prev, title: e.target.value }))}
+                    className="rounded-xl px-3 py-2 text-sm border outline-none" style={{ borderColor: "oklch(0.88 0 0)" }} />
+                  <input type="text" placeholder="Subtítulo (opcional)" value={newCarouselImage.subtitle}
+                    onChange={(e) => setNewCarouselImage(prev => ({ ...prev, subtitle: e.target.value }))}
+                    className="rounded-xl px-3 py-2 text-sm border outline-none" style={{ borderColor: "oklch(0.88 0 0)" }} />
+                  <button onClick={async () => {
+                      if (!newCarouselImage.image_url) return
+                      const res = await fetch("/api/carousel", { method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ...newCarouselImage, sort_order: carouselImages.length }) })
+                      const data = await res.json()
+                      setCarouselImages(prev => [...prev, data])
+                      setNewCarouselImage({ image_url: "", title: "", subtitle: "" })
+                      triggerSaved()
+                    }}
+                    disabled={!newCarouselImage.image_url}
+                    className="rounded-xl px-4 py-2 text-sm font-bold disabled:opacity-50"
+                    style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}>
+                    Agregar al carrusel
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 
