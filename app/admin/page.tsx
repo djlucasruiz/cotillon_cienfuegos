@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import {
   LogOut, Search, Plus, Pencil, Trash2, Save, X,
-  ShoppingBag, Package, Tag, RotateCcw, CheckCircle2, ExternalLink,
+  ShoppingBag, Package, Tag, RotateCcw, CheckCircle2, ExternalLink, Upload,
   Users, Building2, BadgePercent, ToggleLeft, ToggleRight, Key,
   Palette, List, FolderPlus, ChevronDown, ChevronUp
 } from "lucide-react"
