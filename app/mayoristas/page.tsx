@@ -269,6 +269,7 @@ export default function WholesalePage() {
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         items={items}
+        totalPrice={totalPrice}
         onRemove={removeFromCart}
         onUpdateQuantity={updateQuantity}
         onClear={clearCart}
