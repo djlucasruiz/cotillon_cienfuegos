@@ -55,6 +55,7 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true)
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "wholesale" | "tienda">("products")
   const [saved, setSaved] = useState(false)
+  const [syncing, setSyncing] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string>(() => {
     if (typeof window === "undefined") return "/logo.jpg"
     return localStorage.getItem("cc_logo") || "/logo.jpg"
@@ -197,6 +198,13 @@ export default function AdminPage() {
               <CheckCircle2 size={13} /> Guardado
             </span>
           )}
+          <button
+            onClick={syncToCloud}
+            disabled={syncing}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border transition-all hover:opacity-80 disabled:opacity-50"
+            style={{ borderColor: "oklch(0.38 0.12 248)", color: "oklch(0.38 0.12 248)", backgroundColor: "oklch(0.38 0.12 248 / 0.08)" }}>
+            <Upload size={13} /> {syncing ? "Guardando..." : "Guardar en la nube"}
+          </button>
           <a href="/" target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border transition-all hover:opacity-80"
             style={{ borderColor: "oklch(0.88 0.03 90)", color: "oklch(0.4 0.03 270)" }}>
