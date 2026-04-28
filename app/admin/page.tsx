@@ -106,6 +106,33 @@ export default function AdminPage() {
 
   function triggerSaved() { setSaved(true); setTimeout(() => setSaved(false), 2500) }
 
+  async function syncToCloud() {
+    setSyncing(true)
+    try {
+      for (const p of products) {
+        await fetch("/api/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: p.id, name: p.name, description: p.description,
+            price: p.price, category: p.category, image: p.image,
+            image_alt: p.imageAlt, badge: p.badge, badge_color: p.badgeColor,
+            featured: p.featured, colors: p.colors || [], features: p.features || []
+          })
+        })
+      }
+      for (let i = 0; i < categories.length; i++) {
+        await fetch("/api/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...categories[i], sort_order: i })
+        })
+      }
+      triggerSaved()
+    } catch(e) { console.error(e) }
+    setSyncing(false)
+  }
+
   // ── Product handlers ────────────────────────────────────────────────────────
 
   function handleEdit(p: Product) {
