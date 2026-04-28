@@ -126,14 +126,7 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && searchQuery.trim()) {
-                    // Find the catalog search input and update it
-                    const catalogInput = document.querySelector("#productos input[type=text]") as HTMLInputElement
-                    if (catalogInput) {
-                      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set
-                      nativeInputValueSetter?.call(catalogInput, searchQuery)
-                      catalogInput.dispatchEvent(new Event("input", { bubbles: true }))
-                      catalogInput.focus()
-                    }
+                    document.dispatchEvent(new CustomEvent("catalog-search", { detail: searchQuery }))
                     document.getElementById("productos")?.scrollIntoView({ behavior: "smooth" })
                     setSearchOpen(false)
                     setSearchQuery("")

@@ -66,21 +66,9 @@ export function Hero() {
 
           {/* Hero image */}
           <div className="flex-1 w-full max-w-md">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src="https://placehold.co/540x380?text=Colorful+party+supplies+store+with+balloons+confetti+ribbons+streamers+festive+decorations"
-                alt="Globos coloridos, cotillón y artículos de fiesta en Cotillón Cienfuegos Concordia"
-                className="w-full h-full object-cover"
-              />
-              {/* Badge flotante */}
-              <div
-                className="absolute top-4 right-4 rounded-2xl px-4 py-2 text-center shadow-lg"
-                style={{ backgroundColor: "oklch(0.92 0.12 90)" }}
-              >
-                <p className="text-xs font-bold" style={{ color: "oklch(0.2 0.02 270)" }}>Más de</p>
-                <p className="text-2xl font-extrabold" style={{ color: "oklch(0.6 0.22 5)" }}>500+</p>
-                <p className="text-xs font-bold" style={{ color: "oklch(0.2 0.02 270)" }}>productos</p>
-              </div>
+            <div className="flex-1 w-full max-w-lg mx-auto">
+            <Carousel />
+          </div>
             </div>
           </div>
         </div>

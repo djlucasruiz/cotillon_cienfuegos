@@ -21,6 +21,12 @@ export function Catalog({ onAddToCart }: CatalogProps) {
     const params = new URLSearchParams(window.location.search)
     const q = params.get("q")
     if (q) setSearch(q)
+    // Listen for search events from header
+    function handleSearch(e: CustomEvent) {
+      setSearch(e.detail)
+    }
+    document.addEventListener("catalog-search", handleSearch as EventListener)
+    return () => document.removeEventListener("catalog-search", handleSearch as EventListener)
   }, [])
 
   const filtered = products.filter((p) => {
