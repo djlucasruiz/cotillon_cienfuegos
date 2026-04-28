@@ -29,7 +29,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
   })
 
   return (
-    <section id="productos" className="py-14 px-4 md:px-8">
+    <section id="categorias" className="py-14 px-4 md:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
@@ -67,7 +67,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
         </div>
 
         {/* Categories */}
-        <div id="categorias" className="flex flex-wrap justify-center gap-2 mb-8">
+        <div id="productos" className="flex flex-wrap justify-center gap-2 mb-8">
           {categories.map((cat) => (
             <button
               key={cat.id}

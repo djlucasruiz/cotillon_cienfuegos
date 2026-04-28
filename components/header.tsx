@@ -15,6 +15,8 @@ interface HeaderProps {
 
 export function Header({ cartCount, onCartOpen }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const [authOpen, setAuthOpen] = useState(false)
   const [session, setSession] = useState<{ id: string; name: string; email: string } | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -53,8 +55,8 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
 
   const navLinks = [
     { label: "Inicio", href: "#inicio" },
-    { label: "Productos", href: "#productos" },
-    { label: "Categorías", href: "#categorias" },
+    { label: "Productos", href: "#categorias" },
+    { label: "Categorías", href: "#productos" },
     { label: "Ofertas", href: "#ofertas" },
     { label: "Mayoristas", href: "/mayoristas/login" },
     { label: "Contacto", href: "#contacto" },
@@ -113,8 +115,40 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
             ))}
           </ul>
 
+          {/* Search bar expandible */}
+          {searchOpen && (
+            <div className="flex-1 flex items-center gap-2 max-w-sm">
+              <input
+                autoFocus
+                type="text"
+                placeholder="Buscar productos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchQuery.trim()) {
+                    window.location.href = `/#categorias?q=${encodeURIComponent(searchQuery)}`
+                    setSearchOpen(false)
+                  }
+                  if (e.key === "Escape") setSearchOpen(false)
+                }}
+                className="flex-1 rounded-full px-4 py-2 text-sm border outline-none"
+                style={{ borderColor: "oklch(0.88 0 0)", backgroundColor: "oklch(0.97 0 0)" }}
+              />
+            </div>
+          )}
+
           {/* Acciones */}
           <div className="flex items-center gap-2">
+
+            {/* Lupa búsqueda */}
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              className="hidden md:flex items-center justify-center w-9 h-9 rounded-full transition-all hover:opacity-70"
+              style={{ color: "oklch(0.25 0.02 250)" }}
+              aria-label="Buscar"
+            >
+              <Search size={18} />
+            </button>
 
             {/* Botón admin */}
             <Link
