@@ -1,5 +1,6 @@
 "use client"
 
+import { Carousel } from "@/components/carousel"
 import { Sparkles, Truck, ShieldCheck, Clock } from "lucide-react"
 
 export function Hero() {
