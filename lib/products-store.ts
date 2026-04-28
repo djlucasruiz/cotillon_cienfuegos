@@ -1,9 +1,47 @@
 import { products as defaultProducts, categories as defaultCategories, type Product, type Category } from "@/lib/products"
 
+// ─── Productos desde Supabase ─────────────────────────────────────────────────
+
+export async function getProductsFromDB(): Promise<Product[]> {
+  try {
+    const res = await fetch("/api/products")
+    if (!res.ok) return defaultProducts
+    const data = await res.json()
+    if (!Array.isArray(data) || data.length === 0) return defaultProducts
+    return data.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description || "",
+      price: p.price,
+      category: p.category || "todos",
+      image: p.image || "",
+      imageAlt: p.image_alt || p.name,
+      badge: p.badge,
+      badgeColor: p.badge_color,
+      featured: p.featured || false,
+      colors: p.colors || [],
+      features: p.features || [],
+    }))
+  } catch {
+    return defaultProducts
+  }
+}
+
+export async function getCategoriesFromDB(): Promise<Category[]> {
+  try {
+    const res = await fetch("/api/categories")
+    if (!res.ok) return defaultCategories
+    const data = await res.json()
+    if (!Array.isArray(data) || data.length === 0) return defaultCategories
+    return data
+  } catch {
+    return defaultCategories
+  }
+}
+
+// Keep localStorage functions for backwards compatibility
 const PRODUCTS_KEY = "cc_products"
 const CATEGORIES_KEY = "cc_categories"
-
-// ─── Productos ────────────────────────────────────────────────────────────────
 
 export function getProducts(): Product[] {
   if (typeof window === "undefined") return defaultProducts
@@ -23,32 +61,54 @@ export function getProducts(): Product[] {
 export function saveProducts(products: Product[]): void {
   if (typeof window === "undefined") return
   localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products))
+  // Also save to Supabase
+  products.forEach(async (p) => {
+    await fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        category: p.category,
+        image: p.image,
+        image_alt: p.imageAlt,
+        badge: p.badge,
+        badge_color: p.badgeColor,
+        featured: p.featured,
+        colors: p.colors || [],
+        features: p.features || [],
+      })
+    })
+  })
 }
 
-export function resetProducts(): void {
+export function saveCategories(categories: Category[]): void {
   if (typeof window === "undefined") return
-  localStorage.removeItem(PRODUCTS_KEY)
+  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories))
+  // Also save to Supabase
+  categories.forEach(async (c, i) => {
+    await fetch("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...c, sort_order: i })
+    })
+  })
 }
-
-// ─── Categorías ───────────────────────────────────────────────────────────────
 
 export function getCategories(): Category[] {
   if (typeof window === "undefined") return defaultCategories
   try {
     const raw = localStorage.getItem(CATEGORIES_KEY)
     if (!raw) return defaultCategories
-    return JSON.parse(raw) as Category[]
+    return JSON.parse(raw)
   } catch {
     return defaultCategories
   }
 }
 
-export function saveCategories(cats: Category[]): void {
+export function resetProducts(): void {
   if (typeof window === "undefined") return
-  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(cats))
-}
-
-export function resetCategories(): void {
-  if (typeof window === "undefined") return
-  localStorage.removeItem(CATEGORIES_KEY)
+  localStorage.removeItem(PRODUCTS_KEY)
 }
