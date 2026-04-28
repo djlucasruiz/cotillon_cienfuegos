@@ -112,3 +112,8 @@ export function resetProducts(): void {
   if (typeof window === "undefined") return
   localStorage.removeItem(PRODUCTS_KEY)
 }
+
+export function resetCategories(): void {
+  if (typeof window === "undefined") return
+  localStorage.removeItem("cc_categories")
+}
