@@ -55,8 +55,8 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
 
   const navLinks = [
     { label: "Inicio", href: "#inicio" },
-    { label: "Productos", href: "#categorias" },
-    { label: "Categorías", href: "#productos" },
+    { label: "Productos", href: "#productos" },
+    { label: "Categorías", href: "#categorias" },
     { label: "Ofertas", href: "#ofertas" },
     { label: "Mayoristas", href: "/mayoristas/login" },
     { label: "Contacto", href: "#contacto" },
@@ -126,7 +126,7 @@ export function Header({ cartCount, onCartOpen }: HeaderProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && searchQuery.trim()) {
-                    window.location.href = `/#categorias?q=${encodeURIComponent(searchQuery)}`
+                    window.location.href = `/#productos?q=${encodeURIComponent(searchQuery)}`
                     setSearchOpen(false)
                   }
                   if (e.key === "Escape") setSearchOpen(false)

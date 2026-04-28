@@ -17,6 +17,10 @@ export function Catalog({ onAddToCart }: CatalogProps) {
 
   useEffect(() => {
     getProductsFromDB().then(setProducts)
+    // Read search query from URL
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get("q")
+    if (q) setSearch(q)
   }, [])
 
   const filtered = products.filter((p) => {
