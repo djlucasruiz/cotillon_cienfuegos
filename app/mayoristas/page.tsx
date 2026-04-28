@@ -4,20 +4,125 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import {
-  LogOut, ShoppingCart, Tag, Package, MessageCircle,
-  Building2, User, Phone, BadgePercent, Search
+  LogOut, ShoppingCart, Package, MessageCircle,
+  Building2, BadgePercent, Search, Plus, Minus, CheckCircle2
 } from "lucide-react"
 import { getWholesaleSession, wholesaleLogout, type WholesaleClient } from "@/lib/wholesale-store"
-import { getProductsFromDB, getCategoriesFromDB } from "@/lib/products-store"
-import { formatPrice, type Product, type Category } from "@/lib/products"
+import { getProductsFromDB } from "@/lib/products-store"
+import { categories, formatPrice, type Product } from "@/lib/products"
 import { useCart } from "@/hooks/use-cart"
 import { CartDrawer } from "@/components/cart-drawer"
+
+function WholesaleProductCard({
+  product,
+  discount,
+  onAddToCart,
+}: {
+  product: Product
+  discount: number
+  onAddToCart: (product: Product, quantity: number) => void
+}) {
+  const [qty, setQty] = useState(1)
+  const [added, setAdded] = useState(false)
+  const wPrice = Math.round(product.price * (1 - discount / 100))
+  const saving = product.price - wPrice
+
+  function handleAdd() {
+    onAddToCart({ ...product, price: wPrice }, qty)
+    setAdded(true)
+    setTimeout(() => { setAdded(false); setQty(1) }, 1500)
+  }
+
+  return (
+    <article className="group flex flex-col rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1" style={{ backgroundColor: "oklch(1 0 0)", border: "1px solid oklch(0.9 0 0)" }}>
+      <div className="relative overflow-hidden h-48" style={{ backgroundColor: "oklch(0.96 0 0)" }}>
+        <img
+          src={product.image}
+          alt={product.imageAlt}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+        />
+        <span
+          className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-bold shadow"
+          style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}
+        >
+          -{discount}%
+        </span>
+        {qty > 1 && (
+          <span
+            className="absolute top-3 right-3 rounded-full w-7 h-7 flex items-center justify-center text-xs font-extrabold shadow-md"
+            style={{ backgroundColor: "oklch(0.6 0.22 5)", color: "oklch(1 0 0)" }}
+          >
+            {qty}
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-col flex-1 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "oklch(0.38 0.12 248)" }}>
+          {product.category.replace(/-/g, " ")}
+        </p>
+        <h3 className="text-sm font-bold leading-snug mb-1 text-balance" style={{ color: "oklch(0.2 0.02 270)" }}>
+          {product.name}
+        </h3>
+        <p className="text-xs leading-relaxed mb-3 flex-1" style={{ color: "oklch(0.55 0.03 270)" }}>
+          {product.description}
+        </p>
+
+        <div className="flex flex-col mb-3">
+          <span className="text-xs line-through" style={{ color: "oklch(0.65 0 0)" }}>
+            {formatPrice(product.price)}
+          </span>
+          <span className="text-lg font-extrabold" style={{ color: "oklch(0.38 0.12 248)" }}>
+            {formatPrice(wPrice)}
+          </span>
+          <span className="text-xs font-semibold" style={{ color: "oklch(0.55 0.1 145)" }}>
+            Ahorrás {formatPrice(saving)}{qty > 1 ? ` · Total: ${formatPrice(wPrice * qty)}` : ""}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 mt-auto">
+          <div className="flex items-center rounded-xl border overflow-hidden" style={{ borderColor: "oklch(0.88 0.03 90)" }}>
+            <button
+              onClick={() => setQty(q => Math.max(1, q - 1))}
+              disabled={qty <= 1}
+              className="w-8 h-8 flex items-center justify-center transition-colors hover:opacity-70 disabled:opacity-30"
+              style={{ color: "oklch(0.3 0.02 270)" }}
+            >
+              <Minus size={13} />
+            </button>
+            <span className="w-8 text-center text-sm font-bold select-none" style={{ color: "oklch(0.2 0.02 270)" }}>
+              {qty}
+            </span>
+            <button
+              onClick={() => setQty(q => Math.min(99, q + 1))}
+              disabled={qty >= 99}
+              className="w-8 h-8 flex items-center justify-center transition-colors hover:opacity-70 disabled:opacity-30"
+              style={{ color: "oklch(0.3 0.02 270)" }}
+            >
+              <Plus size={13} />
+            </button>
+          </div>
+          <button
+            onClick={handleAdd}
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:scale-105 hover:shadow-md"
+            style={{
+              backgroundColor: added ? "oklch(0.55 0.18 145)" : "oklch(0.38 0.12 248)",
+              color: "oklch(1 0 0)",
+            }}
+          >
+            {added ? <><CheckCircle2 size={14} /> Agregado</> : <><ShoppingCart size={14} /> Agregar</>}
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
 
 export default function WholesalePage() {
   const router = useRouter()
   const [client, setClient] = useState<WholesaleClient | null>(null)
   const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
   const [search, setSearch] = useState("")
   const [selectedCat, setSelectedCat] = useState("todos")
   const [cartOpen, setCartOpen] = useState(false)
@@ -31,17 +136,11 @@ export default function WholesalePage() {
     }
     setClient(session)
     getProductsFromDB().then(setProducts)
-    getCategoriesFromDB().then(setCategories)
   }, [router])
 
-  function handleLogout() {
-    wholesaleLogout()
-    router.replace("/mayoristas/login")
-  }
-
-  function wholesalePrice(price: number): number {
-    if (!client) return price
-    return Math.round(price * (1 - client.discount / 100))
+  function handleAddToCart(product: Product, quantity = 1) {
+    addToCart(product, quantity)
+    setCartOpen(true)
   }
 
   const filtered = products.filter((p) => {
@@ -75,13 +174,11 @@ export default function WholesalePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Info cliente */}
           <div className="hidden md:flex flex-col items-end">
             <p className="text-xs font-bold" style={{ color: "oklch(0.2 0.02 250)" }}>{client.businessName}</p>
             <p className="text-xs" style={{ color: "oklch(0.55 0 0)" }}>{client.discount}% de descuento</p>
           </div>
 
-          {/* Carrito */}
           <button
             onClick={() => setCartOpen(true)}
             className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all hover:opacity-90"
@@ -100,7 +197,7 @@ export default function WholesalePage() {
           </button>
 
           <button
-            onClick={handleLogout}
+            onClick={() => { wholesaleLogout(); router.replace("/mayoristas/login") }}
             className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all hover:opacity-70"
             style={{ color: "oklch(0.5 0 0)" }}
           >
@@ -118,10 +215,7 @@ export default function WholesalePage() {
           style={{ backgroundColor: "oklch(0.38 0.12 248 / 0.06)", borderColor: "oklch(0.38 0.12 248 / 0.2)" }}
         >
           <div className="flex items-center gap-4">
-            <div
-              className="rounded-full p-3"
-              style={{ backgroundColor: "oklch(0.38 0.12 248 / 0.12)" }}
-            >
+            <div className="rounded-full p-3" style={{ backgroundColor: "oklch(0.38 0.12 248 / 0.12)" }}>
               <Building2 size={24} style={{ color: "oklch(0.38 0.12 248)" }} />
             </div>
             <div>
@@ -133,117 +227,83 @@ export default function WholesalePage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div
-              className="flex items-center gap-2 rounded-2xl px-5 py-3 border"
-              style={{ backgroundColor: "oklch(1 0 0)", borderColor: "oklch(0.9 0 0)" }}
-            >
-              <BadgePercent size={20} style={{ color: "oklch(0.38 0.12 248)" }} />
-              <div>
-                <p className="text-2xl font-extrabold leading-none" style={{ color: "oklch(0.38 0.12 248)" }}>
-                  {client.discount}%
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0 0)" }}>descuento</p>
-              </div>
+          <div
+            className="flex items-center gap-2 rounded-2xl px-5 py-3 border"
+            style={{ backgroundColor: "oklch(1 0 0)", borderColor: "oklch(0.9 0 0)" }}
+          >
+            <BadgePercent size={20} style={{ color: "oklch(0.38 0.12 248)" }} />
+            <div>
+              <p className="text-2xl font-extrabold leading-none" style={{ color: "oklch(0.38 0.12 248)" }}>
+                {client.discount}%
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0 0)" }}>descuento</p>
             </div>
           </div>
         </div>
 
-        {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "oklch(0.6 0 0)" }} />
-            <input
-              type="text"
-              placeholder="Buscar productos..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm border outline-none"
-              style={{ borderColor: "oklch(0.88 0 0)", backgroundColor: "oklch(1 0 0)", color: "oklch(0.15 0.02 250)" }}
-            />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCat(cat.id)}
-                className="rounded-full px-4 py-2 text-xs font-semibold transition-all hover:opacity-80 whitespace-nowrap"
-                style={
-                  selectedCat === cat.id
-                    ? { backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }
-                    : { backgroundColor: "oklch(1 0 0)", color: "oklch(0.4 0 0)", border: "1px solid oklch(0.88 0 0)" }
-                }
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
+        {/* Búsqueda */}
+        <div className="relative max-w-md mx-auto mb-8">
+          <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: "oklch(0.55 0.03 270)" }} />
+          <input
+            type="text"
+            placeholder="Buscar productos..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-full pl-11 pr-4 py-3 text-sm border outline-none transition-all focus:ring-2"
+            style={{ backgroundColor: "oklch(1 0 0)", borderColor: "oklch(0.88 0.03 90)", color: "oklch(0.2 0.02 270)" }}
+          />
         </div>
+
+        {/* Categorías — iguales que retail */}
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCat(cat.id)}
+              className="rounded-full px-4 py-2 text-xs font-semibold transition-all hover:scale-105"
+              style={
+                selectedCat === cat.id
+                  ? { backgroundColor: cat.color, color: "oklch(1 0 0)", boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)" }
+                  : { backgroundColor: "oklch(1 0 0)", color: "oklch(0.4 0.03 270)", border: "1.5px solid oklch(0.88 0.03 90)" }
+              }
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Contador */}
+        <p className="text-xs mb-5 text-center" style={{ color: "oklch(0.55 0.03 270)" }}>
+          {filtered.length} {filtered.length === 1 ? "producto encontrado" : "productos encontrados"}
+        </p>
 
         {/* Grid productos */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filtered.map((product) => {
-            const wPrice = wholesalePrice(product.price)
-            const saving = product.price - wPrice
-            return (
-              <div
+        {filtered.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filtered.map((product) => (
+              <WholesaleProductCard
                 key={product.id}
-                className="rounded-2xl border overflow-hidden flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-md"
-                style={{ backgroundColor: "oklch(1 0 0)", borderColor: "oklch(0.9 0 0)" }}
-              >
-                <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: "oklch(0.96 0 0)" }}>
-                  <img
-                    src={product.image}
-                    alt={product.imageAlt}
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Badge descuento */}
-                  <div
-                    className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-xs font-bold"
-                    style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}
-                  >
-                    -{client.discount}%
-                  </div>
-                </div>
-
-                <div className="p-3 flex flex-col gap-2 flex-1">
-                  <p className="text-xs font-bold leading-snug line-clamp-2" style={{ color: "oklch(0.2 0.02 250)" }}>
-                    {product.name}
-                  </p>
-
-                  <div className="mt-auto flex flex-col gap-0.5">
-                    <p className="text-xs line-through" style={{ color: "oklch(0.65 0 0)" }}>
-                      {formatPrice(product.price)}
-                    </p>
-                    <p className="text-base font-extrabold" style={{ color: "oklch(0.38 0.12 248)" }}>
-                      {formatPrice(wPrice)}
-                    </p>
-                    <p className="text-xs" style={{ color: "oklch(0.55 0.1 145)" }}>
-                      Ahorrás {formatPrice(saving)}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => addToCart({ ...product, price: wPrice })}
-                    className="w-full rounded-xl py-2 text-xs font-bold transition-all hover:opacity-90 mt-1"
-                    style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}
-                  >
-                    Agregar al carrito
-                  </button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="py-20 text-center">
+                product={product}
+                discount={client.discount}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
             <Package size={40} className="mx-auto mb-3" style={{ color: "oklch(0.75 0 0)" }} />
-            <p className="text-sm font-semibold" style={{ color: "oklch(0.45 0 0)" }}>Sin resultados</p>
+            <p className="font-semibold" style={{ color: "oklch(0.45 0 0)" }}>Sin resultados</p>
+            <button
+              onClick={() => { setSearch(""); setSelectedCat("todos") }}
+              className="mt-4 rounded-full px-5 py-2 text-sm font-semibold transition-all hover:scale-105"
+              style={{ backgroundColor: "oklch(0.38 0.12 248)", color: "oklch(1 0 0)" }}
+            >
+              Ver todos
+            </button>
           </div>
         )}
 
-        {/* Contacto directo */}
+        {/* Contacto */}
         <div
           className="mt-10 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border"
           style={{ backgroundColor: "oklch(1 0 0)", borderColor: "oklch(0.9 0 0)" }}
@@ -272,8 +332,8 @@ export default function WholesalePage() {
         onClose={() => setCartOpen(false)}
         items={items}
         totalPrice={totalPrice}
-        onRemove={removeFromCart}
         onUpdateQuantity={updateQuantity}
+        onRemove={removeFromCart}
         onClear={clearCart}
         skipAuthCheck={true}
       />
